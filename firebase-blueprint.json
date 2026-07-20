@@ -1,0 +1,157 @@
+{
+  "entities": {
+    "Room": {
+      "title": "Room",
+      "description": "A collaborative event sync room shared by volunteers.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique Room Code"
+        },
+        "eventName": {
+          "type": "string",
+          "description": "Name of the event Campaign"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the room was created"
+        }
+      },
+      "required": ["id", "eventName", "createdAt"]
+    },
+    "Participant": {
+      "title": "Participant",
+      "description": "An attendee or registrant of the event.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Full name of the participant"
+        },
+        "studentID": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Student ID number"
+        },
+        "tokenNumber": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Assigned unique ticket or token number"
+        },
+        "contactNumber": {
+          "type": "string",
+          "maxLength": 30,
+          "description": "Contact phone number"
+        },
+        "tShirtSize": {
+          "type": "string",
+          "maxLength": 10,
+          "description": "Selected T-Shirt size"
+        }
+      },
+      "required": ["name", "studentID"]
+    },
+    "ScanLog": {
+      "title": "ScanLog",
+      "description": "A single QR/Barcode scan or manual check-in verification log entry.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique log entry ID"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the verification scan"
+        },
+        "studentID": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Student ID scanned"
+        },
+        "tokenNumber": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Token number scanned"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Participant's full name"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["success", "duplicate", "invalid"],
+          "description": "Status of the scan"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Decline reason or details"
+        },
+        "activityId": {
+          "type": "string",
+          "description": "ID of the booth/station where scanned"
+        },
+        "volunteerName": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Name of the scanning volunteer"
+        },
+        "volunteerId": {
+          "type": "string",
+          "description": "UID or unique session identifier of the volunteer"
+        }
+      },
+      "required": ["id", "timestamp", "studentID", "status", "activityId"]
+    },
+    "Presence": {
+      "title": "Presence",
+      "description": "Active volunteer presence tracking inside a room.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Volunteer identifier"
+        },
+        "volunteerName": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Display name of the volunteer"
+        },
+        "lastActive": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last heartbeat timestamp"
+        },
+        "activeStationId": {
+          "type": "string",
+          "description": "Currently active station ID or null/dashboard"
+        }
+      },
+      "required": ["id", "volunteerName", "lastActive"]
+    }
+  },
+  "firestore": {
+    "/rooms/{roomId}": {
+      "schema": "Room",
+      "description": "Directly accessible shared sync rooms."
+    },
+    "/rooms/{roomId}/participants/{studentID}": {
+      "schema": "Participant",
+      "description": "Participant list synchronized for the room."
+    },
+    "/rooms/{roomId}/logs/{logId}": {
+      "schema": "ScanLog",
+      "description": "Scans across all booths, synced live for the room."
+    },
+    "/rooms/{roomId}/presence/{volunteerId}": {
+      "schema": "Presence",
+      "description": "Presence registry for real-time online volunteer counters."
+    }
+  }
+}

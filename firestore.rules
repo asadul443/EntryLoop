@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global verification primitives
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming(request) {
+      return request.resource.data;
+    }
+
+    function existing(resource) {
+      return resource.data;
+    }
+
+    // Match Rooms
+    match /rooms/{roomId} {
+      allow get: if isValidId(roomId);
+      allow create: if isValidId(roomId) 
+                    && incoming(request).id == roomId
+                    && incoming(request).eventName is string
+                    && incoming(request).eventName.size() <= 200;
+      allow update: if isValidId(roomId)
+                    && incoming(request).id == roomId
+                    && incoming(request).eventName is string
+                    && incoming(request).eventName.size() <= 200
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['eventName']);
+
+      // Match Participants inside Room
+      match /participants/{studentID} {
+        allow read: if isValidId(roomId) && isValidId(studentID);
+        allow write: if isValidId(roomId) && isValidId(studentID)
+                     && incoming(request).name is string
+                     && incoming(request).name.size() <= 150
+                     && incoming(request).studentID == studentID;
+      }
+
+      // Match Scan Logs inside Room
+      match /logs/{logId} {
+        allow read: if isValidId(roomId) && isValidId(logId);
+        allow create: if isValidId(roomId) && isValidId(logId)
+                      && incoming(request).id == logId
+                      && incoming(request).studentID is string
+                      && incoming(request).studentID.size() <= 100
+                      && incoming(request).status in ['success', 'duplicate', 'invalid'];
+        allow update, delete: if false; // Logs are write-once append-only for extreme audit security!
+      }
+
+      // Match Presence inside Room
+      match /presence/{volunteerId} {
+        allow read: if isValidId(roomId) && isValidId(volunteerId);
+        allow write: if isValidId(roomId) && isValidId(volunteerId)
+                     && incoming(request).id == volunteerId
+                     && incoming(request).volunteerName is string
+                     && incoming(request).volunteerName.size() <= 150;
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Civil Scanner</title>
+    <script>
+      // Robust fix for environments where window.fetch has only a getter or is read-only
+      (function() {
+        try {
+          var originalFetch = window.fetch;
+          if (originalFetch) {
+            var makeWritable = function(obj, prop) {
+              try {
+                var currentVal = originalFetch;
+                Object.defineProperty(obj, prop, {
+                  get: function() {
+                    return currentVal;
+                  },
+                  set: function(newVal) {
+                    currentVal = newVal;
+                  },
+                  configurable: true,
+                  enumerable: true
+                });
+              } catch (e) {
+                try {
+                  Object.defineProperty(obj, prop, {
+                    value: originalFetch,
+                    writable: true,
+                    configurable: true,
+                    enumerable: true
+                  });
+                } catch (err) {
+                  console.warn('Failed to define ' + prop + ' on target:', err);
+                }
+              }
+            };
+
+            // Patch window, globalThis, and Window.prototype
+            makeWritable(window, 'fetch');
+            if (typeof globalThis !== 'undefined') {
+              makeWritable(globalThis, 'fetch');
+            }
+            var proto = Object.getPrototypeOf(window);
+            if (proto) {
+              makeWritable(proto, 'fetch');
+            }
+          }
+        } catch (globalError) {
+          console.warn('Failed to apply fetch patch:', globalError);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
