@@ -364,6 +364,39 @@ export default function App() {
     );
   }, []);
 
+  // Synchronize state with history to support device back button
+  useEffect(() => {
+    const isRoot = activeTab === 'dashboard' && activeActivityId === null;
+
+    const handlePopState = () => {
+      // User pressed back button
+      if (activeTab !== 'dashboard' || activeActivityId !== null) {
+        setActiveTab('dashboard');
+        setActiveActivityId(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // If we transition FROM root to an alternative view, we push a state to history
+    // so that the back button triggers popstate instead of exiting the page.
+    if (!isRoot) {
+      if (!window.history.state?.isAlternativeView) {
+        window.history.pushState({ isAlternativeView: true }, '');
+      }
+    } else {
+      // If we are back at root and the history state has isAlternativeView,
+      // we go back in history to keep it in sync.
+      if (window.history.state?.isAlternativeView) {
+        window.history.back();
+      }
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [activeTab, activeActivityId]);
+
   // Update localStorage when participants change
   const handleImportParticipants = (list: Participant[]) => {
     setParticipants(list);

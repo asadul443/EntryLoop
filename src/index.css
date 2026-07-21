@@ -6,3 +6,55 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+@keyframes stampIn {
+  0% {
+    transform: scale(3) rotate(-45deg);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1) rotate(-12deg);
+    opacity: 0.95;
+  }
+  55% {
+    transform: scale(1.1) rotate(-14deg);
+    opacity: 0.98;
+  }
+  100% {
+    transform: scale(1) rotate(-10deg);
+    opacity: 1;
+  }
+}
+
+@keyframes rippleEffect {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes shineEffect {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+  }
+  100% {
+    transform: translateX(150%) skewX(-25deg);
+  }
+}
+
+.animate-stamp {
+  animation: stampIn 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-ripple {
+  animation: rippleEffect 2s infinite cubic-bezier(0.25, 0, 0, 1);
+}
+
+.animate-shine {
+  animation: shineEffect 3.5s infinite ease-in-out;
+}
+
+

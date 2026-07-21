@@ -502,30 +502,57 @@ export default function Dashboard({
             };
 
             const colors = getIconColors(act.id);
+            const isCompleted = progressPercent === 100 && totalParticipants > 0;
 
             return (
               <div 
                 key={act.id} 
                 onClick={() => onSelectActivity(act.id)}
-                className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:border-indigo-300 transition-all cursor-pointer group hover:shadow-md"
+                className={`relative overflow-hidden bg-white rounded-[2rem] p-6 shadow-sm border transition-all cursor-pointer group hover:shadow-md ${
+                  isCompleted 
+                    ? 'border-emerald-300 hover:border-emerald-400 bg-gradient-to-br from-white to-emerald-50/10' 
+                    : 'border-slate-200 hover:border-indigo-300'
+                }`}
               >
+                {/* 100% Completed Stamp Seal */}
+                {isCompleted && (
+                  <div className="absolute top-[-10px] right-[-10px] pointer-events-none select-none z-10 animate-stamp">
+                    <div className="relative flex items-center justify-center p-3">
+                      {/* Ripple ring indicators */}
+                      <div className="absolute w-20 h-20 rounded-full border-2 border-dashed border-emerald-500/20 bg-emerald-500/5 animate-ripple"></div>
+                      <div className="absolute w-20 h-20 rounded-full border border-emerald-500/10 bg-emerald-500/5 animate-ripple" style={{ animationDelay: '0.8s' }}></div>
+                      
+                      {/* The physical watermark seal badge */}
+                      <div className="w-20 h-20 rounded-full bg-white/80 border-4 border-double border-emerald-500/45 text-emerald-600 flex flex-col items-center justify-center shadow-md backdrop-blur-[1px]">
+                        <div className="w-full h-full rounded-full border border-dashed border-emerald-500/35 flex flex-col items-center justify-center p-1">
+                          <Sparkles className="w-4 h-4 text-emerald-500 animate-pulse" />
+                          <span className="text-[7px] font-black tracking-[0.12em] text-emerald-600 uppercase leading-none mt-1.5">COMPLETED</span>
+                          <span className="text-[5px] font-bold text-emerald-400 tracking-wider mt-0.5">100% VERIFIED</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <div className="flex items-start justify-between mb-4">
                     <span className={`text-2xl font-semibold w-14 h-14 ${colors.bg} ${colors.text} rounded-2xl flex items-center justify-center transition-all group-hover:scale-105 shadow-sm`}>
                       {act.icon}
                     </span>
-                    <span className={`text-xs ${colors.text} ${colors.bg} font-bold py-1 px-3 rounded-full uppercase`}>
-                      {progressPercent}% Done
-                    </span>
+                    {!isCompleted && (
+                      <span className={`text-xs ${colors.text} ${colors.bg} font-bold py-1 px-3 rounded-full uppercase`}>
+                        {progressPercent}% Done
+                      </span>
+                    )}
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors">
+                  <h3 className="text-xl font-bold text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors pr-8">
                     {act.name}
                   </h3>
                   
                   <div className="flex justify-between mt-4">
                     <p className="text-slate-500 text-sm">Scanned: <span className="text-slate-900 font-semibold">{scannedCount}</span></p>
-                    <p className="text-slate-500 text-sm">Target: <span className="text-slate-900 font-semibold">{totalParticipants || '—'}</span></p>
+                    <p className="text-slate-500 text-sm">Remaining: <span className="text-slate-900 font-semibold">{remaining}</span></p>
                   </div>
                 </div>
 
@@ -533,6 +560,7 @@ export default function Dashboard({
                   <div className="w-full bg-slate-100 rounded-full h-2 mr-4 overflow-hidden">
                     <div 
                       className={`h-full rounded-full transition-all duration-500 ${
+                        isCompleted ? 'bg-emerald-500' :
                         act.id.includes('check-in') ? 'bg-blue-500' :
                         act.id.includes('check-out') ? 'bg-rose-500' :
                         act.id.includes('t-shirt') ? 'bg-orange-500' :
@@ -547,7 +575,11 @@ export default function Dashboard({
                       e.stopPropagation();
                       onSelectActivity(act.id);
                     }}
-                    className="flex h-10 w-10 rounded-full bg-slate-100 group-hover:bg-indigo-600 text-slate-600 group-hover:text-white items-center justify-center transition-all border-0 cursor-pointer active:scale-90 flex-shrink-0"
+                    className={`flex h-10 w-10 rounded-full items-center justify-center transition-all border-0 cursor-pointer active:scale-90 flex-shrink-0 ${
+                      isCompleted 
+                        ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white' 
+                        : 'bg-slate-100 text-slate-600 group-hover:bg-indigo-600 group-hover:text-white'
+                    }`}
                     title={`Open ${act.name}`}
                   >
                     <ArrowRight className="w-5 h-5" />

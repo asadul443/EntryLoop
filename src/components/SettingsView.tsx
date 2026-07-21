@@ -153,6 +153,7 @@ export default function SettingsView({
   const [isInIframe, setIsInIframe] = useState(false);
   const [importMethod, setImportMethod] = useState<'google' | 'file'>('file');
   const [isDragging, setIsDragging] = useState(false);
+  const [pendingPdfFile, setPendingPdfFile] = useState<File | null>(null);
 
   useEffect(() => {
     try {
@@ -693,7 +694,7 @@ export default function SettingsView({
   // Local File Upload & Parsing (Offline Excel/CSV support)
   const parseLocalFile = (file: File) => {
     if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-      parsePdfFile(file);
+      setPendingPdfFile(file);
       return;
     }
     setImportLoading(true);
@@ -1939,6 +1940,70 @@ export default function SettingsView({
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* PDF Upload Warning Modal */}
+      {pendingPdfFile && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden animate-scaleUp">
+            {/* Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-amber-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center animate-pulse">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-800 text-sm">PDF Import Warning</h3>
+                  <p className="text-[10px] text-slate-500">Unstructured file format detected</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPendingPdfFile(null)}
+                className="p-1.5 hover:bg-white text-slate-400 hover:text-slate-600 rounded-xl border-0 cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  You are attempting to import a roster using a <strong>PDF file</strong> (<span className="font-mono text-[11px] text-indigo-600 font-bold">{pendingPdfFile.name}</span>).
+                </p>
+                <div className="p-3.5 bg-amber-50 text-amber-850 text-xs font-semibold rounded-2xl border border-amber-100/50 flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                  <span className="leading-relaxed">
+                    PDF files do not have a fixed table structure. Roster data (like names or tokens) can sometimes be misplaced, cut off, or parsed incorrectly depending on the PDF layout.
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  We highly recommend using an <strong>Excel (.xlsx, .xls)</strong> or <strong>CSV</strong> spreadsheet file for a <strong>butter smooth, flawless experience</strong>.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-50 p-5 border-t border-slate-150 flex justify-end gap-2.5">
+              <button
+                onClick={() => setPendingPdfFile(null)}
+                className="bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer transition-colors"
+              >
+                Cancel & Use Excel
+              </button>
+              <button
+                onClick={() => {
+                  const file = pendingPdfFile;
+                  setPendingPdfFile(null);
+                  parsePdfFile(file);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-xl text-xs cursor-pointer transition-colors shadow-sm flex items-center justify-center gap-1.5"
+              >
+                <span>Continue with PDF</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
